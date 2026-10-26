@@ -1,0 +1,22 @@
+# Blueprint de Render para el agente A2A.
+# El plan free se duerme tras unos minutos sin tráfico; el primer request
+# puede tardar cerca de un minuto. ANTHROPIC_API_KEY se carga en el panel
+# (sync: false) y no debe aparecer en el repositorio.
+services:
+  - type: web
+    name: mindr-a2a
+    runtime: python
+    plan: free
+    rootDir: agent
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: PUBLIC_URL
+        value: https://agent.mindr.top
+      - key: ANTHROPIC_MODEL
+        value: claude-haiku-5-5
+      - key: ANTHROPIC_API_KEY
+        sync: false
