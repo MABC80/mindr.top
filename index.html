@@ -3,13 +3,210 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World | mindr.top</title>
+  <title>Mindr — agentes A2A</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='3' fill='%230b0f1a'/%3E%3Ccircle cx='8' cy='8' r='3' fill='%23d6ff4a'/%3E%3C/svg%3E">
+  <meta name="description" content="Mindr descubre agentes públicos que hablan el protocolo A2A.">
   <style>
-    body { margin:0; height:100vh; display:flex; align-items:center; justify-content:center; font-family:system-ui,sans-serif; background:#0b0f1a; color:#e6edf3; }
-    h1 { font-size:3rem; }
+    :root {
+      color-scheme: dark;
+      --bg: #0b0f1a;
+      --panel: #131a2a;
+      --line: #2a354c;
+      --text: #e8eef7;
+      --muted: #93a0b5;
+      --accent: #d6ff4a;
+      --accent-ink: #142000;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(900px 420px at 80% -10%, rgba(214, 255, 74, 0.08), transparent 60%),
+        var(--bg);
+      color: var(--text);
+    }
+    main {
+      width: min(760px, calc(100% - 2rem));
+      margin: 0 auto;
+      padding: 4.5rem 0 3rem;
+    }
+    p.kicker {
+      margin: 0 0 0.75rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+      color: var(--accent);
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 6vw, 3.4rem);
+      line-height: 1.05;
+      font-weight: 650;
+    }
+    .lead {
+      margin: 1rem 0 0;
+      max-width: 38rem;
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.9rem 1.1rem;
+      margin-top: 1.75rem;
+    }
+    button.play {
+      appearance: none;
+      border: 0;
+      background: var(--accent);
+      color: var(--accent-ink);
+      font: inherit;
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding: 0.85rem 1.5rem;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    button.play:disabled { opacity: 0.65; cursor: progress; }
+    button.play:focus-visible { outline: 2px solid #fff; outline-offset: 3px; }
+    #status {
+      margin: 0;
+      color: var(--muted);
+      min-height: 1.3em;
+    }
+    #results {
+      list-style: none;
+      margin: 1.75rem 0 0;
+      padding: 0;
+      display: grid;
+      gap: 0.75rem;
+    }
+    article {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1rem 1.1rem 1.05rem;
+    }
+    article h2 { margin: 0; font-size: 1.15rem; }
+    article p {
+      margin: 0.45rem 0 0.8rem;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+    article a { color: var(--accent); }
+    footer {
+      margin-top: 2.5rem;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    footer a { color: var(--text); }
   </style>
 </head>
 <body>
-  <h1>Hello World</h1>
+  <main>
+    <p class="kicker">mindr.top</p>
+    <h1>Descubre agentes A2A</h1>
+    <p class="lead">
+      Este sitio lanza un agente que habla el protocolo Agent2Agent.
+      Play le pide que busque otros agentes públicos y que compruebe su tarjeta.
+    </p>
+    <div class="actions">
+      <button class="play" id="play" type="button">Play</button>
+      <p id="status" role="status" aria-live="polite"></p>
+    </div>
+    <ul id="results"></ul>
+    <footer>
+      <a id="self-card" href="https://agent.mindr.top/.well-known/agent-card.json">Tarjeta de este agente</a>
+    </footer>
+  </main>
+  <script>
+    const PRODUCTION = "https://agent.mindr.top";
+    const play = document.getElementById("play");
+    const status = document.getElementById("status");
+    const results = document.getElementById("results");
+
+    function agentBase() {
+      const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+      if (!local) return PRODUCTION;
+      const override = new URLSearchParams(location.search).get("agent");
+      if (!override) return PRODUCTION;
+      try {
+        const url = new URL(override);
+        const hostOk = url.hostname === "localhost" || url.hostname === "127.0.0.1";
+        const schemeOk = url.protocol === "http:" || url.protocol === "https:";
+        if (hostOk && schemeOk) return url.origin;
+      } catch (error) {
+        /* se usa el agente público */
+      }
+      return PRODUCTION;
+    }
+
+    function safeHttpUrl(value) {
+      try {
+        const url = new URL(value);
+        if (url.protocol === "https:" || url.protocol === "http:") return url.href;
+      } catch (error) {
+        return "";
+      }
+      return "";
+    }
+
+    function render(agents) {
+      results.replaceChildren();
+      for (const agent of agents.slice(0, 10)) {
+        const item = document.createElement("li");
+        const article = document.createElement("article");
+        const title = document.createElement("h2");
+        title.textContent = agent.name || "Agente";
+        const description = document.createElement("p");
+        description.textContent = agent.description || "Sin descripción.";
+        article.append(title, description);
+        const cardUrl = safeHttpUrl(agent.card_url);
+        if (cardUrl) {
+          const link = document.createElement("a");
+          link.href = cardUrl;
+          link.target = "_blank";
+          link.rel = "noopener noreferrer";
+          link.textContent = "Ver tarjeta del agente";
+          article.append(link);
+        }
+        item.append(article);
+        results.append(item);
+      }
+    }
+
+    play.addEventListener("click", async () => {
+      play.disabled = true;
+      results.replaceChildren();
+      status.textContent = "Buscando agentes A2A… El servidor gratuito puede tardar cerca de un minuto en despertar.";
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 90000);
+      try {
+        const response = await fetch(agentBase() + "/discover", {
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
+        });
+        if (!response.ok) throw new Error("respuesta " + response.status);
+        const data = await response.json();
+        const agents = Array.isArray(data.agents) ? data.agents : [];
+        if (agents.length === 0) {
+          status.textContent = "No encontré agentes A2A con una tarjeta válida.";
+          return;
+        }
+        render(agents);
+        const count = Math.min(agents.length, 10);
+        status.textContent = count === 1 ? "1 agente encontrado." : count + " agentes encontrados.";
+      } catch (error) {
+        status.textContent = "No se pudo completar la búsqueda. Si el servicio está dormido, espera un minuto y vuelve a intentarlo.";
+      } finally {
+        clearTimeout(timer);
+        play.disabled = false;
+      }
+    });
+  </script>
 </body>
 </html>
