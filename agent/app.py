@@ -41,15 +41,15 @@ ORIGIN_REGEX = r"^https://(www\.)?mindr\.top$|^http://(localhost|127\.0\.0\.1)(:
 
 @dataclass(frozen=True)
 class Settings:
-    public_url: str = "https://agent.mindr.top"
+    public_url: str = "https://mindr-a2a.onrender.com"
     anthropic_api_key: str = ""
     anthropic_model: str = "claude-haiku-5-5"
 
     @classmethod
     def from_env(cls) -> Settings:
         return cls(
-            public_url=os.environ.get("PUBLIC_URL", "https://agent.mindr.top").strip()
-            or "https://agent.mindr.top",
+            public_url=os.environ.get("PUBLIC_URL", "https://mindr-a2a.onrender.com").strip()
+            or "https://mindr-a2a.onrender.com",
             anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY", ""),
             anthropic_model=os.environ.get("ANTHROPIC_MODEL", "claude-haiku-5-5").strip()
             or "claude-haiku-5-5",

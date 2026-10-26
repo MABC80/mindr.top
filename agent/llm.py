@@ -44,7 +44,7 @@ _PROPOSE_SYSTEM = (
     "que publiquen una Agent Card, y solo si los recuerdas de registros, "
     "listas awesome-a2a o documentación. Sirve un origen (https://host) o la "
     "tarjeta (/.well-known/agent-card.json o /.well-known/agent.json). "
-    "No incluyas agent.mindr.top ni hosts privados. No inventes dominios."
+    "No incluyas mindr-a2a.onrender.com ni hosts privados. No inventes dominios."
 )
 
 

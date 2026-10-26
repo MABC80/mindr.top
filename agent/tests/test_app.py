@@ -23,7 +23,7 @@ class FakeLLM(LLM):
 
 def _client():
     llm = FakeLLM()
-    app = create_app(Settings(public_url="https://agent.mindr.top"), llm)
+    app = create_app(Settings(public_url="https://mindr-a2a.onrender.com"), llm)
     return app, llm
 
 
@@ -42,7 +42,7 @@ def test_health_card_and_cors():
         other = client.get("/.well-known/agent.json")
         assert card.status_code == 200
         assert card.json() == other.json()
-        assert card.json()["url"] == "https://agent.mindr.top/"
+        assert card.json()["url"] == "https://mindr-a2a.onrender.com/"
         assert card.json()["name"] == "Mindr"
         assert "skills" in card.json() and "capabilities" in card.json()
         assert card.headers["etag"]

@@ -2,7 +2,7 @@
 
 Servicio pequeño que habla el protocolo [A2A](https://a2a-protocol.org/latest/specification/) (Agent2Agent). Responde `message/send` con Claude y puede buscar otros agentes A2A públicos.
 
-La página estática de https://mindr.top llama a `GET /discover` en https://agent.mindr.top. Este directorio es el servicio que se despliega en Render. La clave de Anthropic no va en el repositorio: solo existe en la variable `ANTHROPIC_API_KEY` del host.
+La página estática de https://mindr.top llama a `GET /discover` en https://mindr-a2a.onrender.com. Este directorio es el servicio que se despliega en Render. La clave de Anthropic no va en el repositorio: solo existe en la variable `ANTHROPIC_API_KEY` del host.
 
 El modelo por defecto es `claude-haiku-5-5` (el alias `claude-3-5-haiku-latest` está retirado). Se cambia con `ANTHROPIC_MODEL`.
 
@@ -42,15 +42,15 @@ Sustituye el host por `http://127.0.0.1:8000` si lo corres en local. `PUBLIC_URL
 Tarjeta del agente (las dos rutas canónicas):
 
 ```bash
-curl -sS https://agent.mindr.top/.well-known/agent-card.json
-curl -sS https://agent.mindr.top/.well-known/agent.json
-curl -sS https://agent.mindr.top/health
+curl -sS https://mindr-a2a.onrender.com/.well-known/agent-card.json
+curl -sS https://mindr-a2a.onrender.com/.well-known/agent.json
+curl -sS https://mindr-a2a.onrender.com/health
 ```
 
 Conversación JSON-RPC 2.0 (`message/send`). El mismo cuerpo también se acepta en `POST /a2a`:
 
 ```bash
-curl -sS https://agent.mindr.top/ \
+curl -sS https://mindr-a2a.onrender.com/ \
   -H 'Content-Type: application/json' \
   -d '{
     "jsonrpc": "2.0",
@@ -70,8 +70,8 @@ curl -sS https://agent.mindr.top/ \
 Descubrimiento como endpoint y como mensaje A2A. Puede tardar unos 40 segundos; en el plan free de Render, el primer intento tras un rato de inactividad puede acercarse a un minuto mientras el proceso despierta. La respuesta queda en caché unos 30 minutos.
 
 ```bash
-curl -sS https://agent.mindr.top/discover
-curl -sS https://agent.mindr.top/ \
+curl -sS https://mindr-a2a.onrender.com/discover
+curl -sS https://mindr-a2a.onrender.com/ \
   -H 'Content-Type: application/json' \
   -d '{
     "jsonrpc": "2.0",
@@ -103,8 +103,8 @@ El blueprint está en `render.yaml`, en la raíz del repo.
 
 1. En Render, crea un Blueprint a partir de este repositorio (o un Web Service Python con root directory `agent`). El plan es **free**. El proceso escucha en `$PORT`.
 2. Cuando pida `ANTHROPIC_API_KEY`, pégala en el panel. `sync: false` evita que un futuro blueprint la borre o la escriba en git. No la pongas en un commit.
-3. `PUBLIC_URL` ya vale `https://agent.mindr.top`. El modelo por defecto es `claude-haiku-5-5`.
-4. En el servicio, añade el dominio propio `agent.mindr.top` y crea el CNAME que indique Render. El CNAME de GitHub Pages (`mindr.top`) no se toca: la web sigue siendo estática.
+3. `PUBLIC_URL` ya vale `https://mindr-a2a.onrender.com`, el hostname gratuito de Render. No hace falta un dominio propio. El modelo por defecto es `claude-haiku-5-5`.
+4. El CNAME de GitHub Pages (`mindr.top`) no se toca: la web sigue siendo estática y llama al servicio en `https://mindr-a2a.onrender.com`.
 5. Comprueba `GET /health` y las curl de arriba. El plan free se duerme; el primer request puede tardar cerca de un minuto.
 
-CORS permite `https://mindr.top`, `https://www.mindr.top` y, para probar la página en local, `http://localhost` y `http://127.0.0.1` con puerto. La página de producción siempre llama a `https://agent.mindr.top`.
+CORS permite `https://mindr.top`, `https://www.mindr.top` y, para probar la página en local, `http://localhost` y `http://127.0.0.1` con puerto. La página de producción siempre llama a `https://mindr-a2a.onrender.com`.

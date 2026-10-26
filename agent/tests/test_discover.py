@@ -82,8 +82,10 @@ def test_private_hosts_are_blocked():
 
     for host in ("127.0.0.1", "10.1.2.3", "192.168.0.5", "169.254.169.254", "localhost", "metadata.google.internal"):
         assert asyncio.run(check(host)) is False
-    assert is_self("https://agent.mindr.top/.well-known/agent-card.json", "http://127.0.0.1:8000")
+    assert is_self("https://mindr-a2a.onrender.com/.well-known/agent-card.json", "http://127.0.0.1:8000")
     assert is_self("https://127.0.0.1/a2a", "http://127.0.0.1:8000")
+    assert is_self("https://alias.example/a2a", "https://alias.example/")
+    assert not is_self("https://other.example/a2a", "https://mindr-a2a.onrender.com")
 
 
 def test_discovery_fetches_valid_cards_and_skips_self_and_private():
@@ -96,8 +98,8 @@ def test_discovery_fetches_valid_cards_and_skips_self_and_private():
             return httpx.Response(200, json=CARD)
         if url.endswith("other.example/.well-known/agent.json"):
             return httpx.Response(200, json=OTHER)
-        if "agent.mindr.top" in url:
-            return httpx.Response(200, json=build_agent_card("https://agent.mindr.top"))
+        if "mindr-a2a.onrender.com" in url:
+            return httpx.Response(200, json=build_agent_card("https://mindr-a2a.onrender.com"))
         if url.endswith("thin.example/.well-known/agent-card.json"):
             return httpx.Response(200, json={"name": "Thin", "url": "https://thin.example/a2a"})
         if "registry.example" in url:
@@ -108,7 +110,7 @@ def test_discovery_fetches_valid_cards_and_skips_self_and_private():
         return httpx.Response(404)
 
     async def host_ok(host: str) -> bool:
-        return host.endswith(".example") or host == "agent.mindr.top"
+        return host.endswith(".example") or host == "mindr-a2a.onrender.com"
 
     async def proposer(query: str) -> list[str]:
         assert query == "clima"
@@ -117,7 +119,7 @@ def test_discovery_fetches_valid_cards_and_skips_self_and_private():
             "https://127.0.0.1/.well-known/agent-card.json",
             "https://10.1.2.3/.well-known/agent-card.json",
             "http://169.254.169.254/latest/meta-data",
-            "https://agent.mindr.top",
+            "https://mindr-a2a.onrender.com",
             "https://thin.example",
         ]
 
@@ -136,7 +138,7 @@ def test_discovery_fetches_valid_cards_and_skips_self_and_private():
             async with httpx.AsyncClient(transport=transport) as client:
                 # El README de prueba se pide como texto. MockTransport no distingue.
                 first = await discover_agents(
-                    public_url="https://agent.mindr.top",
+                    public_url="https://mindr-a2a.onrender.com",
                     query="clima",
                     client=client,
                     proposer=proposer,
@@ -191,7 +193,7 @@ def test_cache_skips_a_second_fetch():
         try:
             async with httpx.AsyncClient(transport=transport) as client:
                 kwargs = dict(
-                    public_url="https://agent.mindr.top",
+                    public_url="https://mindr-a2a.onrender.com",
                     query="",
                     client=client,
                     proposer=proposer,
@@ -227,7 +229,7 @@ def test_probe_stops_when_the_budget_is_already_spent():
             return await _probe(
                 client,
                 "https://listed.example/.well-known/agent-card.json",
-                "https://agent.mindr.top",
+                "https://mindr-a2a.onrender.com",
                 host_ok,
                 time.monotonic() - 1,
                 asyncio.Semaphore(1),
