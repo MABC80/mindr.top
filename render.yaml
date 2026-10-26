@@ -15,7 +15,7 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.8"
       - key: PUBLIC_URL
-        value: https://agent.mindr.top
+        value: https://mindr-a2a.onrender.com
       - key: ANTHROPIC_MODEL
         value: claude-haiku-5-5
       - key: ANTHROPIC_API_KEY

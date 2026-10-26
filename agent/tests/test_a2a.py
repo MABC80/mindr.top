@@ -32,12 +32,12 @@ V1 = {
 
 
 def test_own_card_validates_and_uses_public_url():
-    card = build_agent_card("https://agent.mindr.top")
+    card = build_agent_card("https://mindr-a2a.onrender.com")
     parsed = validate_agent_card(card)
     assert parsed is not None
     assert parsed["name"] == "Mindr"
-    assert parsed["url"] == "https://agent.mindr.top/"
-    assert card["supportedInterfaces"][0]["url"] == "https://agent.mindr.top/"
+    assert parsed["url"] == "https://mindr-a2a.onrender.com/"
+    assert card["supportedInterfaces"][0]["url"] == "https://mindr-a2a.onrender.com/"
     json.dumps(card)
 
 

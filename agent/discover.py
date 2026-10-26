@@ -63,7 +63,8 @@ AWESOME_URLS = (
     "https://raw.githubusercontent.com/inference-gateway/awesome-a2a/main/README.md",
 )
 
-SELF_HOSTS = {"agent.mindr.top"}
+# Hostname público fijo, además del host de PUBLIC_URL (is_self compara ambos).
+SELF_HOSTS = {"mindr-a2a.onrender.com"}
 
 _CARD_URL = re.compile(
     r"https?://[^\s`<>\"')\]]+/\.well-known/agent(?:-card)?\.json",
@@ -571,7 +572,7 @@ async def _main() -> None:
     import json
 
     logging.basicConfig(level=logging.INFO, format="%(message)s")
-    result = await discover_agents(public_url="https://agent.mindr.top", proposer=None)
+    result = await discover_agents(public_url="https://mindr-a2a.onrender.com", proposer=None)
     print(json.dumps(result.as_dict(), ensure_ascii=False, indent=2))
 
 
