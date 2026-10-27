@@ -69,7 +69,7 @@ def create_app(settings: Settings | None = None, llm: LLM | None = None) -> Fast
         app.state.http = httpx.AsyncClient(
             headers={"User-Agent": USER_AGENT, "Accept": "application/json, text/plain;q=0.8"},
             follow_redirects=False,
-            limits=httpx.Limits(max_connections=20, max_keepalive_connections=10),
+            limits=httpx.Limits(max_connections=32, max_keepalive_connections=16),
         )
         try:
             yield
