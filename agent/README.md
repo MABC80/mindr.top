@@ -67,7 +67,7 @@ curl -sS https://mindr-a2a.onrender.com/ \
   }'
 ```
 
-Descubrimiento como endpoint y como mensaje A2A. Puede tardar unos 40 segundos; en el plan free de Render, el primer intento tras un rato de inactividad puede acercarse a un minuto mientras el proceso despierta. La respuesta queda en caché unos 30 minutos.
+Descubrimiento como endpoint y como mensaje A2A. Puede tardar unos 40 segundos; en el plan free de Render, el primer intento tras un rato de inactividad puede acercarse a un minuto mientras el proceso despierta. Un resultado completo queda en caché unos 30 minutos. Si alguna tarjeta agotó el tiempo, falló de forma transitoria o la búsqueda quedó a medias, la caché dura unos 90 segundos: el campo `complete` sale en `false`.
 
 ```bash
 curl -sS https://mindr-a2a.onrender.com/discover
@@ -91,11 +91,11 @@ curl -sS https://mindr-a2a.onrender.com/ \
 
 ## Cómo descubre
 
-1. Semillas fijas, incluida https://agent.agiq.top (el agente hermano; si aún no resuelve, se omite).
-2. Registros públicos: `a2aregistry.org` y AgentPeering, más los README de listas awesome-a2a en GitHub.
+1. Semillas fijas, incluida https://agent.agiq.top (el agente hermano; si aún no resuelve, se omite). Al empezar se les hace una petición corta para despertar servicios dormidos.
+2. Registros públicos, paginados mientras alcance el presupuesto: `a2aregistry.org` y AgentPeering (varias páginas con `offset`/`limit`) y [NANDA NEST](https://nest.projectnanda.org/api/agents). NEST no trae la URL de la tarjeta: de `endpoint` y `factsUrl` se prueban `/.well-known/agent-card.json` y, si esa no existe, `agent.json` en el mismo origen. También entran los README de listas awesome-a2a en GitHub.
 3. Si hay `ANTHROPIC_API_KEY`, Claude propone más orígenes con la herramienta `propose_candidates`. Esas URLs se comprueban igual que el resto: no se listan solo porque el modelo las nombre.
 
-Hay tope de concurrencia, timeout por petición y un presupuesto total de unos 40 segundos. No se piden hosts privados, de loopback ni de metadatos.
+Hay tope de concurrencia, unos 18 segundos por tarjeta y un presupuesto total de unos 40 segundos. Una tarjeta que agota el tiempo o responde con un error transitorio se reintenta una vez si aún queda presupuesto. `agent.json` solo se pide si `agent-card.json` respondió y no era una tarjeta válida, para no ocupar otro hueco en un servicio que está despertando. No se piden hosts privados, de loopback ni de metadatos.
 
 ## Despliegue en Render
 
